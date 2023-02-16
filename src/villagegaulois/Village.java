@@ -14,6 +14,35 @@ public class Village {
 		villageois = new Gaulois[nbVillageoisMaximum];
 	}
 
+	private static class Marche {
+		private Etal[] etals;
+		int nbEtal;
+
+		public Marche(int nbEtal) {
+			this.etals = new Etal[nbEtal];
+		}
+
+		void utiliserEtal(int indiceEtal, Gaulois vendeur, String produit, int nbProduit) {
+			etals[indiceEtal].occuperEtal(vendeur, produit, nbProduit);
+		}
+
+		int trouverEtatLibre() {
+			for (int i = 0; i < nbEtal; i++) {
+				if (etals[i] != null) {
+					return -1;
+				}
+
+			}
+			return 0;
+
+		}
+
+		Etal[] trouverEtals(String produit) {
+
+			return etals;
+
+		}
+	}
 	public String getNom() {
 		return nom;
 	}
