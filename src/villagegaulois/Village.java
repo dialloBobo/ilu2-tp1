@@ -19,6 +19,7 @@ public class Village {
 	private static class Marche {
 		private Etal[] etals;
 		int nbEtal;
+		
 
 		public Marche(int nbEtal) {
 			etals = new Etal[nbEtal];
@@ -31,27 +32,36 @@ public class Village {
 			etals[indiceEtal].occuperEtal(vendeur, produit, nbProduit);
 		}
 
-		int trouverEtatLibre() {
-			for (int i = 0; i < nbEtal; i++) {
-				if (!(etals[i].isEtalOccupe())) {
-					return i;
-				}
+		private int trouverEtatLibre() {
+			int indiceEtalDispo = -1;
+			int i = 0;
+			while (indiceEtalDispo == -1 && i < etals.length) {
+				if (!etals[i].isEtalOccupe())
+					indiceEtalDispo = i;
+				i++;
 			}
-
-			return -1;
-
+			return indiceEtalDispo;
 		}
 
-		Etal[] trouverEtals(String produit) {
-			Etal[] etal = new Etal[etals.length];
-			for (int i = 0; i < etals.length; i++) {
-				if (etals[i].contientProduit(produit)) {
-					etal[i] = etals[i];
+		private Etal[] trouverEtals(String produit) {
+			int nbEtal = 0;
+			for (Etal etal : etals) {
+				if (etal.isEtalOccupe() && etal.contientProduit(produit)) {
+					nbEtal++;
 				}
 			}
-
-			return etal;
-
+			Etal[] etalsProduitsRecherche = null;
+			if (nbEtal > 0) {
+				etalsProduitsRecherche = new Etal[nbEtal];
+				int nbEtalTrouve = 0;
+				for (int i = 0; i < etals.length && nbEtalTrouve < nbEtal; i++) {
+					if (etals[i].isEtalOccupe() && etals[i].contientProduit(produit)) {
+						etalsProduitsRecherche[nbEtalTrouve] = etals[i];
+						nbEtalTrouve++;
+					}
+				}
+			}
+			return etalsProduitsRecherche;
 		}
 
 		Etal trouverVendeur(Gaulois gaulois) {
@@ -63,37 +73,80 @@ public class Village {
 			return null;
 
 		}
-
-		public String afficherMarche() {
-			int nombre = 0;
-
-			for (int i = 0; i < etals.length; i++) {
-				if ((etals[i].isEtalOccupe())) {
-					etals[i].afficherEtal();
-					nombre += 1;
-				}
-			}
-			int nbEtalVide = nbEtal - nombre;
-			return "Il reste " + nbEtalVide + " étals non utilisés dans le marché \n";
-		}
 		
 
+		private String afficherMarche() {
+			int nbEtalvide = 0;
+			StringBuilder chaine = new StringBuilder();
+			for (int i = 0; i < etals.length; i++) {
+				if (etals[i].isEtalOccupe()) {
+					chaine.append(etals[i].afficherEtal());
+				} else {
+					nbEtalvide++;
+				}
+			}
+			chaine.append("Il reste " + nbEtalvide + " etals non utilises dans le marche.\n");
+			return chaine.toString();
+		}
+
 	}
+
+	
+	
 
 	public String installerVendeur(Gaulois vendeur, String produit, int nbProduit) {
 		StringBuilder chaine = new StringBuilder();
 		int indiceEtalL = marche.trouverEtatLibre();
 
-			chaine.append(vendeur.getNom() + " cherche un endroit pour vendre " + nbProduit + " " + produit + ".\n");
+		chaine.append(vendeur.getNom() + " cherche un endroit pour vendre " + nbProduit + " " + produit + ".\n");
+		
+		if (indiceEtalL != -1) {
+			marche.utiliserEtal(indiceEtalL, vendeur, produit, nbProduit);
+			chaine.append("le vendeur " + vendeur.getNom() + " vend des " + produit + " " + " à l'étal n° "
+					+ (indiceEtalL + 1));
 
-			chaine.append(
-					"le vendeur " + vendeur.getNom() + " vend des " + produit + " " + " à l'étal n° " + indiceEtalL);
-
-
-
+		}
+		else{
+			chaine.append("impossible de s'installer\n");
+		}
 		return chaine.toString();
 
 	}
+
+
+
+
+	public String rechercherVendeursProduit(String produit) {
+		StringBuilder chaine = new StringBuilder();
+		chaine.append("Les vendeurs qui proposent des " + produit + " sont :");
+		Etal[] vendeursProduit = marche.trouverEtals(produit);
+		for (int i = 0; i < vendeursProduit.length; i++) {
+			chaine.append("- " + vendeursProduit[i].getVendeur() + "\n");
+		}
+		return chaine.toString();
+	}
+
+	public Etal rechercherEtal(Gaulois vendeur) {
+		return marche.trouverVendeur(vendeur);
+	}
+
+	public String partirVendeur(Gaulois vendeur) {
+		Etal etal = rechercherEtal(vendeur);
+		StringBuilder chaine = new StringBuilder();
+		chaine.append(etal.libererEtal());
+		return chaine.toString();
+
+	}
+
+	public String afficherMarche() {
+
+		StringBuilder chaine = new StringBuilder();
+		chaine.append("Le marché du village << le village des irréductibles >> possède plusieurs étals :\n");
+		chaine.append(marche.afficherMarche());
+		return chaine.toString();
+	}
+//
+
 
 
 	public String getNom() {
@@ -138,4 +191,10 @@ public class Village {
 		}
 		return chaine.toString();
 	}
+	
 }
+
+
+
+
+
